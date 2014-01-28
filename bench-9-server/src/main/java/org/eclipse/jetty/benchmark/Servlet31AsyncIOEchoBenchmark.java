@@ -19,6 +19,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -106,6 +107,7 @@ public class Servlet31AsyncIOEchoBenchmark
     {
         final CountDownLatch latch = new CountDownLatch(1);
         client.newRequest("localhost", connector.getLocalPort())
+                .header(HttpHeader.CONTENT_LENGTH, Integer.toString(payload.length))
                 .path(path)
                 .content(new BytesContentProvider(payload))
                 .send(new Response.CompleteListener()
@@ -145,6 +147,8 @@ public class Servlet31AsyncIOEchoBenchmark
                 this.asyncContext = asyncContext;
                 this.input = asyncContext.getRequest().getInputStream();
                 this.output = asyncContext.getResponse().getOutputStream();
+                int contentLength = asyncContext.getRequest().getContentLength();
+                asyncContext.getResponse().setContentLength(contentLength);
             }
 
             @Override
