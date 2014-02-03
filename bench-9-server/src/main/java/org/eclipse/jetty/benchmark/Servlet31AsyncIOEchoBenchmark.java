@@ -150,7 +150,7 @@ public class Servlet31AsyncIOEchoBenchmark
                 this.input = asyncContext.getRequest().getInputStream();
                 this.output = asyncContext.getResponse().getOutputStream();
                 int contentLength = asyncContext.getRequest().getContentLength();
-               // asyncContext.getResponse().setContentLength(contentLength);
+                asyncContext.getResponse().setContentLength(contentLength);
             }
 
             @Override
