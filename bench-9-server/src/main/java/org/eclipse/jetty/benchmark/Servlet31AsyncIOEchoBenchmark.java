@@ -1,5 +1,6 @@
 package org.eclipse.jetty.benchmark;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -141,6 +142,7 @@ public class Servlet31AsyncIOEchoBenchmark
             private final ServletInputStream input;
             private final ServletOutputStream output;
             private boolean complete;
+            private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFFER_SIZE);
 
             private Echoer(AsyncContext asyncContext) throws IOException
             {
@@ -148,7 +150,7 @@ public class Servlet31AsyncIOEchoBenchmark
                 this.input = asyncContext.getRequest().getInputStream();
                 this.output = asyncContext.getResponse().getOutputStream();
                 int contentLength = asyncContext.getRequest().getContentLength();
-                asyncContext.getResponse().setContentLength(contentLength);
+               // asyncContext.getResponse().setContentLength(contentLength);
             }
 
             @Override
@@ -158,24 +160,25 @@ public class Servlet31AsyncIOEchoBenchmark
                 {
                     // We know we can read now
                     int read = input.read(buffer);
+                    byteArrayOutputStream.write(buffer,0,read);
 
                     // We can write because it's either the first write,
                     // or we just checked that the output was ready,
                     // or we have been called from onWritePossible().
-                    output.write(buffer, 0, read);
+                    //output.write(buffer, 0, read);
 
                     // If we did not write it all, we return
                     // and continue from onWritePossible().
-                    if (!output.isReady())
-                        return;
+                    //if (!output.isReady())
+                      //  return;
                 }
                 // We wrote everything, so if we
                 // read it all then we are done.
-                if (input.isFinished())
+                /*if (input.isFinished())
                 {
                     complete = true;
                     asyncContext.complete();
-                }
+                } */
             }
 
             @Override
@@ -186,7 +189,9 @@ public class Servlet31AsyncIOEchoBenchmark
             @Override
             public void onWritePossible() throws IOException
             {
-                if (input.isFinished())
+                output.write(byteArrayOutputStream.toByteArray());
+                asyncContext.complete();
+               /* if (input.isFinished())
                 {
                     if (!complete)
                         asyncContext.complete();
@@ -194,7 +199,7 @@ public class Servlet31AsyncIOEchoBenchmark
                 else
                 {
                     onDataAvailable();
-                }
+                }*/
             }
 
             @Override
